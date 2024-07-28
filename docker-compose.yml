@@ -1,0 +1,30 @@
+version: "2.28.1"
+services:
+  api:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./conf.d/:/etc/nginx/conf.d
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "8080:3000"
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: "exit 0"
